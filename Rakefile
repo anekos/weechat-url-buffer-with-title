@@ -8,7 +8,7 @@ task :default do
     :do_noghing until /\A=begin DOC\Z/ === file.gets.chomp
     File.open('README.md', 'w') do
       |readme|
-      readme.puts(CGI.escapeHTML($_)) until /\A=end\Z/ === file.gets.chomp
+      readme.puts($_[0] + CGI.escapeHTML($_[1..-1])) until /\A=end\Z/ === file.gets.chomp
     end
   end
 end

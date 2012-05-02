@@ -8,6 +8,8 @@ Make URL (with title) collection buffer.
 Options
 =======
 
+> /set plugins.var.ruby.url-buffer-with-title.format '&lt;buffer_number&gt;! &lt;title&gt; - &lt;url&gt;'
+
 ## accept_url
 
 If this option is set, this plugin collects only matched urls.
