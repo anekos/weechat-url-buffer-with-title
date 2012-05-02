@@ -54,7 +54,7 @@ def weechat_init
   Weechat.register(
     'url-buffer-with-title',
     'anekos',
-    '1.0.1',
+    '1.0.2',
     'GPL3',
     'URL collector',
     '',
@@ -63,10 +63,6 @@ def weechat_init
 
   Config.each do
     |name, (default, desc)|
-    if Weechat.config_is_set_plugin(name) == 0
-      default = '' unless default
-      Weechat.config_set_plugin(name, default)
-    end
     Weechat.config_set_desc_plugin(name, desc)
   end
 
@@ -79,10 +75,8 @@ def weechat_init
 end
 
 def get_config_regexp (name)
-  return nil if Weechat.config_is_set_plugin(name) == 0
-  result = Weechat.config_get_plugin(name)
-  return nil if result.empty?
-  Regexp.new(result)
+  s = get_config_string(name, nil)
+  return Regexp.new(s) if s
 end
 
 def get_config_string (name, default = Config[name].first)
