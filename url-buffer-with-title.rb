@@ -2,26 +2,43 @@
 # vim: set fileencoding=utf-8 :
 
 
-# URL-Buffer-With-Title
-#
-# Make URL (with title) collection buffer.
+=begin DOC
+
+URL-Buffer-With-Title
+=====================
+
+Make URL (with title) collection buffer.
 
 
-# Options
-#
-# accept_url:
-#   If this option is set, this plugin collects only matched urls.
-# ignore_url:
-#   If this option is set, this plugin collects only not matched urls.
-# format:
-#   Display format.
-#   Default is "[<buffer_number>] <title>\n<url>"
+Options
+=======
+
+## accept_url
+
+If this option is set, this plugin collects only matched urls.
+
+## ignore_url
+
+If this option is set, this plugin collects only not matched urls.
+
+## format
+
+Display format.
+Default is "[<buffer_number>] <title>\n<url>"
 
 
-# Author: anekos <anekos at snca dot net>
-# Version: 1.0.0
-# Licence GPL3
+Author
+======
 
+anekos <anekos at snca dot net>
+
+
+Licence
+=======
+
+GPL3
+
+=end
 
 require 'nokogiri'
 require 'open-uri'
