@@ -54,7 +54,7 @@ def weechat_init
   Weechat.register(
     'url-buffer-with-title',
     'anekos',
-    '1.0.0',
+    '1.0.1',
     'GPL3',
     'URL collector',
     '',
@@ -132,7 +132,7 @@ def urlbuf_print_cb (data, buffer, date, tags, displayed, highlight, prefix, mes
         html = Nokogiri.HTML(res)
         title = html.search('//title').text
         title = 'No Title' if title.empty?
-        title = title.gsub(/[\r\n]+/, ' ').strip
+        title = title.gsub(/[\t\r\n]+/, ' ').strip
         $queue << Struct.new(:url, :title, :buffer_number).new(url, title, bnum)
       rescue => e
         puts("#{url} #{e}")
