@@ -2,7 +2,7 @@
 # vim: set fileencoding=utf-8 :
 
 
-# URL-And-Title-Buffer
+# URL-Buffer-With-Title
 #
 # Make URL (with title) collection buffer.
 
@@ -35,7 +35,7 @@ Config = {
 
 def weechat_init
   Weechat.register(
-    'url-and-title-buffer',
+    'url-buffer-with-title',
     'anekos',
     '1.0.0',
     'GPL3',
