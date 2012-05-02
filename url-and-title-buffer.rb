@@ -4,6 +4,12 @@ require 'nokogiri'
 require 'open-uri'
 require 'thread'
 
+Config = {
+  'accept_url' => [nil, 'Regexp'],
+  'ignore_url' => [nil, 'Regexp'],
+  'format' => ["[<buffer_number>] <title>\n<url>", 'String'],
+}
+
 def weechat_init
   Weechat.register(
     'url-and-title-buffer',
@@ -15,12 +21,35 @@ def weechat_init
     'utf-8'
   )
 
+  Config.each do
+    |name, (default, desc)|
+    if Weechat.config_is_set_plugin(name) == 0
+      default = '' unless default
+      Weechat.config_set_plugin(name, default)
+    end
+    Weechat.config_set_desc_plugin(name, desc)
+  end
+
   Weechat.hook_print('', 'notify_message', '', 1, 'urlbuf_print_cb', '')
   Weechat.hook_timer(1000, 0, 0, 'urlbuf_timer_cb', '')
 
   $queue = Queue.new
 
   return Weechat::WEECHAT_RC_OK
+end
+
+def get_config_regexp (name)
+  return nil if Weechat.config_is_set_plugin(name) == 0
+  result = Weechat.config_get_plugin(name)
+  return nil if result.empty?
+  Regexp.new(result)
+end
+
+def get_config_string (name, default = Config[name].first)
+  return default if Weechat.config_is_set_plugin(name) == 0
+  result = Weechat.config_get_plugin(name)
+  return default if result.empty?
+  result
 end
 
 def get_url_buffer
@@ -48,6 +77,15 @@ def urlbuf_print_cb (data, buffer, date, tags, displayed, highlight, prefix, mes
 
   message.scan(%r<https?\://[-\w+$;?.%,!#~*/:@&\\=_]+>).each do
     |url|
+
+    if accept_url = get_config_regexp('accept_url')
+      next unless accept_url === url
+    end
+
+    if ignore_url = get_config_regexp('ignore_url')
+      next if ignore_url === url
+    end
+
     Thread.start do
       begin
         res = open(url)
@@ -79,10 +117,8 @@ def urlbuf_timer_cb (data, remaining_calls)
   url_buffer = get_url_buffer
 
   while it = ($queue.pop rescue nil)
-    Weechat.print(
-      url_buffer,
-      "[#{it.buffer_number}] #{it.title}\n#{it.url}"
-    )
+    out = get_config_string('format').gsub(/<([^>]+)>/) {|m| it[m[1...-1]] rescue m }
+    Weechat.print(url_buffer, out)
   end
 
   return Weechat::WEECHAT_RC_OK
