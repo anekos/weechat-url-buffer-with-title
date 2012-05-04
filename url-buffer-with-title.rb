@@ -46,6 +46,8 @@ require 'nokogiri'
 require 'open-uri'
 require 'thread'
 
+DEBUG = false
+
 Config = {
   'accept_url' => [nil, 'Regexp'],
   'ignore_url' => [nil, 'Regexp'],
@@ -131,7 +133,7 @@ def urlbuf_print_cb (data, buffer, date, tags, displayed, highlight, prefix, mes
         title = title.gsub(/[\t\r\n]+/, ' ').strip
         $queue << Struct.new(:url, :title, :buffer_number).new(url, title, bnum)
       rescue => e
-        puts("#{url} #{e}")
+        Weechat.print("", "\t#{url} #{e}") if DEBUG
       end
     end
   end
