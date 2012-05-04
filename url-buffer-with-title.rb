@@ -47,6 +47,9 @@ GPL3
 require 'nokogiri'
 require 'open-uri'
 require 'thread'
+require 'json'
+
+PLUGIN_NAME = 'url-buffer-with-title'
 
 DEBUG = false
 
@@ -58,7 +61,7 @@ Config = {
 
 def weechat_init
   Weechat.register(
-    'url-buffer-with-title',
+    PLUGIN_NAME,
     'anekos',
     '1.0.2',
     'GPL3',
@@ -73,11 +76,13 @@ def weechat_init
   end
 
   Weechat.hook_print('', 'notify_message', '', 1, 'urlbuf_print_cb', '')
-  Weechat.hook_timer(1000, 0, 0, 'urlbuf_timer_cb', '')
-
-  $queue = Queue.new
+  Weechat.hook_signal(signal('fetched'), 'fetched_cb', '')
 
   return Weechat::WEECHAT_RC_OK
+end
+
+def signal (name)
+  PLUGIN_NAME + '.' + name
 end
 
 def get_config_regexp (name)
@@ -126,6 +131,8 @@ def urlbuf_print_cb (data, buffer, date, tags, displayed, highlight, prefix, mes
       next if ignore_url === url
     end
 
+    Weechat.print("", "\tfetching for #{url}") if DEBUG
+
     Thread.start do
       begin
         res = open(url)
@@ -133,7 +140,11 @@ def urlbuf_print_cb (data, buffer, date, tags, displayed, highlight, prefix, mes
         title = html.search('//title').text
         title = 'No Title' if title.empty?
         title = title.gsub(/[\t\r\n]+/, ' ').strip
-        $queue << Struct.new(:url, :title, :buffer_number).new(url, title, bnum)
+        Weechat.hook_signal_send(
+          signal('fetched'),
+          Weechat::WEECHAT_HOOK_SIGNAL_STRING,
+          {:url => url, :title => title, :buffer_number => bnum}.to_json
+        )
       rescue => e
         Weechat.print("", "\t#{url} #{e}") if DEBUG
       end
@@ -151,15 +162,13 @@ def urlbuf_close_cb(data, buffer)
   return Weechat::WEECHAT_RC_OK
 end
 
-def urlbuf_timer_cb (data, remaining_calls)
-  return Weechat::WEECHAT_RC_OK unless $queue
+def fetched_cb (data, signal, signal_data)
+  data = JSON.parse(signal_data)
 
   url_buffer = get_url_buffer
 
-  while it = ($queue.pop rescue nil)
-    out = get_config_string('format').gsub(/<([^>]+)>/) {|m| it[m[1...-1]] rescue m }
-    Weechat.print(url_buffer, out)
-  end
+  out = get_config_string('format').gsub(/<([^>]+)>/) {|m| data[m[1...-1]] rescue m }
+  Weechat.print(url_buffer, out)
 
   return Weechat::WEECHAT_RC_OK
 end
