@@ -78,6 +78,17 @@ def weechat_init
   return Weechat::WEECHAT_RC_OK
 end
 
+def print_help
+  File.open(__FILE__) do
+    |file|
+    :do_noghing until /\A=begin DOC\Z/ === file.gets.chomp
+
+    until /\AAuthor\Z/ === file.gets.chomp
+      Weechat.print('', "\t#{$_}")
+    end
+  end
+end
+
 def get_config_regexp (name)
   s = get_config_string(name, nil)
   return Regexp.new(s) if s
