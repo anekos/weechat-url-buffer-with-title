@@ -51,7 +51,7 @@ require 'json'
 
 PLUGIN_NAME = 'url-buffer-with-title'
 
-DEBUG = false
+DEBUG = true
 
 Config = {
   'accept_url' => [nil, 'Regexp'],
@@ -135,7 +135,9 @@ def urlbuf_print_cb (data, buffer, date, tags, displayed, highlight, prefix, mes
 
     Thread.start do
       begin
+        Weechat.print("", "\topening #{url}") if DEBUG
         res = open(url)
+        Weechat.print("", "\tparsing #{url}") if DEBUG
         html = Nokogiri.HTML(res)
         title = html.search('//title').text
         title = 'No Title' if title.empty?
@@ -145,6 +147,7 @@ def urlbuf_print_cb (data, buffer, date, tags, displayed, highlight, prefix, mes
           Weechat::WEECHAT_HOOK_SIGNAL_STRING,
           {:url => url, :title => title, :buffer_number => bnum}.to_json
         )
+        Weechat.print("", "\tdone: #{url}") if DEBUG
       rescue => e
         Weechat.print("", "\t#{url} #{e}") if DEBUG
       end
