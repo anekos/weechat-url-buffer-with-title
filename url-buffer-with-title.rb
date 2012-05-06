@@ -42,6 +42,8 @@ GPL3
 
 =end
 
+# git repostitory: https://github.com/anekos/weechat-url-buffer-with-title
+
 require 'nokogiri'
 require 'open-uri'
 require 'thread'
